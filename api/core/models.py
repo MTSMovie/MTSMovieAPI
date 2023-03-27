@@ -1,10 +1,13 @@
-from datetime import date, datetime as dt
+from datetime import datetime as dt, date
 
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.db import models
 
 
 # ======{ Профиль }======
+
 class Profile(models.Model):
     user = models.OneToOneField(verbose_name="Пользователь", to=User, on_delete=models.CASCADE)
     image = models.ImageField("Аватар", null=True, blank=True, default=None, upload_to="users/")
@@ -15,6 +18,13 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+@receiver(post_save, sender=User)
+def create_user(sender, **kwargs):
+    if kwargs['created']:
+        user = kwargs['instance']
+        Profile.objects.create(user=user).save()
 
 
 # ======{ Персона (Актер, Режиссер...) }======
@@ -60,7 +70,7 @@ class AgeLimit(models.Model):
         verbose_name_plural = "Возрастное ограничение"
 
     def __str__(self):
-        return self.title
+        return f"{self.title}+"
 
 
 class Genre(models.Model):
@@ -115,3 +125,62 @@ class Movie(models.Model):
 
     def __str__(self):
         return self.title
+
+
+# ======{ Сериал }======
+
+class TVSeries(models.Model):
+    title = models.CharField("Название", max_length=100, unique=True)
+    tagline = models.CharField("Слоган", max_length=100, default='')
+    description = models.TextField("Описание")
+    poster = models.ImageField("Постер", upload_to="tvseries/images/")
+
+    directors = models.ManyToManyField(Person, verbose_name="Режиссер", related_name="tvseries_director")
+    actors = models.ManyToManyField(Person, verbose_name="Актеры", related_name="tvseries_actor")
+
+    genres = models.ManyToManyField(Genre, verbose_name="Жанры", related_name="tvseries_genre")
+    country = models.ManyToManyField(Country, verbose_name="Страны", related_name="tvseries_country")
+    ageLimit = models.ForeignKey(to=AgeLimit, on_delete=models.SET_NULL, null=True,
+                                 verbose_name="Возрастное ограничение")
+    rating = models.FloatField("Рейтинг")
+
+    poster_horizontal_with_text = models.ImageField("Горизонтальный постер с названием", upload_to="tvseries/images/")
+    poster_horizontal_without_text = models.ImageField("Горизонтальный постер без названия", upload_to="tvseries/images/")
+
+
+    class Meta:
+        verbose_name = "Сериал"
+        verbose_name_plural = "Сериалы"
+
+    def __str__(self):
+        return self.title
+
+
+class SeasonTVSeries(models.Model):
+    tvseries = models.ForeignKey(to=TVSeries, on_delete=models.CASCADE, verbose_name="Сериал")
+    number = models.IntegerField("Номер сезона", unique=True)
+    year = models.PositiveSmallIntegerField("Дата выхода", default=dt.now().year)
+
+    class Meta:
+        verbose_name = "Сезон сериала"
+        verbose_name_plural = "Сезоны сериала"
+
+    def __str__(self):
+        return f"{self.tvseries} - {self.number}"
+
+
+class SeriesTVSeries(models.Model):
+    season_tvseries = models.ForeignKey(to=SeasonTVSeries, on_delete=models.CASCADE, verbose_name="Сезон сериала")
+    number = models.IntegerField("Номер серии", unique=True)
+    title = models.CharField("Название", max_length=100, unique=True)
+    description = models.TextField("Описание")
+    timeline = models.IntegerField("Продолжительность", help_text="Указывать продолжительность в минутах")
+    series = models.FileField("Файл серии", upload_to="tvseries/tvseries/")
+    date_publish = models.DateField("Дата выхода", default=date.today)
+
+    class Meta:
+        verbose_name = "Серия сериала"
+        verbose_name_plural = "Серии сериала"
+
+    def __str__(self):
+        return f"{self.season_tvseries} - {self.number} - {self.number}"

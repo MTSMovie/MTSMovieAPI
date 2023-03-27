@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Profile, Person, Career, AgeLimit, Genre, Country, Movie
+from .models import Profile, Person, Career, AgeLimit, Genre, Country, Movie, TVSeries, SeasonTVSeries, SeriesTVSeries
 
 
 class ProfileAdmin(admin.ModelAdmin):
@@ -28,7 +28,20 @@ class CountryAdmin(admin.ModelAdmin):
 
 
 class MovieAdmin(admin.ModelAdmin):
+    search_fields = ['directors__lastname', 'actors__lastname', 'genres__title', 'country__title']
+
+
+class TVSeriesAdmin(admin.ModelAdmin):
     pass
+
+
+class SeasonTVSeriesAdmin(admin.ModelAdmin):
+    pass
+
+
+class SeriesTVSeriesAdmin(admin.ModelAdmin):
+    pass
+
 
 
 admin.site.register(Profile, ProfileAdmin)
@@ -38,3 +51,7 @@ admin.site.register(AgeLimit, AgeLimitAdmin)
 admin.site.register(Genre, GenreAdmin)
 admin.site.register(Country, CountryAdmin)
 admin.site.register(Movie, MovieAdmin)
+
+admin.site.register(TVSeries, TVSeriesAdmin)
+admin.site.register(SeasonTVSeries, SeasonTVSeriesAdmin)
+admin.site.register(SeriesTVSeries, SeriesTVSeriesAdmin)
