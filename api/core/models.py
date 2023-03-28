@@ -1,9 +1,9 @@
 from datetime import datetime as dt, date
 
 from django.contrib.auth.models import User
+from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.db import models
 
 
 # ======{ Профиль }======
@@ -97,7 +97,9 @@ class Country(models.Model):
 
 class Movie(models.Model):
     title = models.CharField("Название", max_length=100, unique=True)
-    tagline = models.CharField("Слоган", max_length=100, default='')
+    title_image = models.ImageField("Название изображением", blank=True, null=True, default=None,
+                                    upload_to="movies/title-images/")
+    tagline = models.CharField("Слоган", max_length=100, default='', blank=True)
     description = models.TextField("Описание")
     poster = models.ImageField("Постер", upload_to="movies/images/")
 
@@ -118,7 +120,6 @@ class Movie(models.Model):
 
     movie = models.FileField("Файл фильма", upload_to="movies/movies/")
 
-
     class Meta:
         verbose_name = "Фильм"
         verbose_name_plural = "Фильмы"
@@ -131,7 +132,9 @@ class Movie(models.Model):
 
 class TVSeries(models.Model):
     title = models.CharField("Название", max_length=100, unique=True)
-    tagline = models.CharField("Слоган", max_length=100, default='')
+    title_image = models.ImageField("Название изображением", blank=True, null=True, default=None,
+                                    upload_to="tvseries/title-images/")
+    tagline = models.CharField("Слоган", max_length=100, default='', blank=True)
     description = models.TextField("Описание")
     poster = models.ImageField("Постер", upload_to="tvseries/images/")
 
@@ -145,8 +148,8 @@ class TVSeries(models.Model):
     rating = models.FloatField("Рейтинг")
 
     poster_horizontal_with_text = models.ImageField("Горизонтальный постер с названием", upload_to="tvseries/images/")
-    poster_horizontal_without_text = models.ImageField("Горизонтальный постер без названия", upload_to="tvseries/images/")
-
+    poster_horizontal_without_text = models.ImageField("Горизонтальный постер без названия",
+                                                       upload_to="tvseries/images/")
 
     class Meta:
         verbose_name = "Сериал"
@@ -172,7 +175,7 @@ class SeasonTVSeries(models.Model):
 class SeriesTVSeries(models.Model):
     season_tvseries = models.ForeignKey(to=SeasonTVSeries, on_delete=models.CASCADE, verbose_name="Сезон сериала")
     number = models.IntegerField("Номер серии", unique=True)
-    title = models.CharField("Название", max_length=100, unique=True)
+    title = models.CharField("Название", max_length=100, blank=True, null=True, default=None)
     description = models.TextField("Описание")
     timeline = models.IntegerField("Продолжительность", help_text="Указывать продолжительность в минутах")
     series = models.FileField("Файл серии", upload_to="tvseries/tvseries/")
@@ -183,4 +186,4 @@ class SeriesTVSeries(models.Model):
         verbose_name_plural = "Серии сериала"
 
     def __str__(self):
-        return f"{self.season_tvseries} - {self.number} - {self.number}"
+        return f"{self.season_tvseries} - {self.number}"
