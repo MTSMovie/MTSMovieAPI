@@ -54,6 +54,12 @@ class MovieSerializer(serializers.ModelSerializer):
         return get_country_list(instance)
 
 
+class PlayerMovieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ("id", "title", "title_image", "movie")
+
+
 class MiniMovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
@@ -111,6 +117,27 @@ class TVSeriesSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_country(instance):
         return get_country_list(instance)
+
+
+
+class PlayerTVSeriesSerializer(serializers.ModelSerializer):
+    series = serializers.SerializerMethodField()
+    current = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TVSeries
+        fields = ("id", "title", "title_image", "series", "current")
+
+    def get_series(self, instance):
+        return self.context.get('series').series.url
+
+    def get_current(self, instance):
+        series = self.context.get('series')
+        return {
+            'season': series.season_tvseries.number,
+            'series': series.number,
+        }
+
 
 
 class MiniTVSeriesSerializer(serializers.ModelSerializer):
