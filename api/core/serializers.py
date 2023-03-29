@@ -43,7 +43,7 @@ class MovieSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ("id", "title", "title_image", "description", "year", "genres", "country", "ageLimit")
+        fields = ("id", "title", "title_image", 'poster_horizontal_without_text', "description", "year", "genres", "country", "ageLimit")
 
     @staticmethod
     def get_genres(instance):
@@ -108,7 +108,7 @@ class TVSeriesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TVSeries
-        fields = ("id", "title", "title_image", "description", "genres", "country", "ageLimit")
+        fields = ("id", "title", "title_image", 'poster_horizontal_without_text', "description", "genres", "country", "ageLimit")
 
     @staticmethod
     def get_genres(instance):
